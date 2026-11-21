@@ -1,0 +1,932 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{adc_stencils}[2026/11/19 v1.2 Visio-Style CircuiTikZ/TikZ Stencil Library for ADC Publication Schematics]
+
+% Required core packages
+\RequirePackage{tikz}
+\RequirePackage{amsmath,amssymb}
+
+% TikZ Libraries
+\usetikzlibrary{arrows.meta, calc, positioning, shapes.geometric, shapes.misc, patterns}
+
+% -----------------------------------------------------------------------------
+% 1. Global Stencil Styles (Pure Black & White Publication Default)
+% -----------------------------------------------------------------------------
+\tikzset{
+    adc line/.style={draw=black, thick},
+    adc wire/.style={draw=black, thick},
+    adc arrow/.style={draw=black, thick, -{Latex[length=4.5pt, width=3.5pt]}},
+    adc bus/.style={draw=black, line width=1.4pt},
+    adc bus arrow/.style={draw=black, line width=1.4pt, -{Latex[length=5pt, width=4.5pt]}},
+    adc block/.style={draw=black, thick, fill=white, rounded corners=2pt, align=center},
+    adc circle/.style={draw=black, thick, fill=white, circle, inner sep=1pt}
+}
+
+% =============================================================================
+% 2. INTERCONNECT, TERMINALS, PINS, & I/O PORTS
+% =============================================================================
+
+% --- 2.1 Terminal (Solid black junction dot for multi-way routing / current summing) ---
+\tikzset{
+    pics/terminal/.style args={#1}{
+        code={
+            \coordinate (-center) at (0, 0);
+            \filldraw[black] (0, 0) circle (#1);
+        }
+    },
+    pics/terminal/.default={1.6pt},
+    pics/terminal_small/.style={
+        code={
+            \coordinate (-center) at (0, 0);
+            \filldraw[black] (0, 0) circle (1.3pt);
+        }
+    },
+    pics/terminal_large/.style={
+        code={
+            \coordinate (-center) at (0, 0);
+            \filldraw[black] (0, 0) circle (2.2pt);
+        }
+    }
+}
+
+% --- 2.2 IO Port (Visio "I/O port" home-plate arrow tag for Vin/Vout) ---
+% Pointed right tip at (0.35, 0), flat left edge at (-0.35, +/-0.14)
+\tikzset{
+    pics/ioport/.style args={#1}{
+        code={
+            \coordinate (-center) at (0, 0);
+            \coordinate (-out) at (0.35, 0);
+            \coordinate (-in) at (-0.35, 0);
+            \draw[adc line, fill=white] (-0.35, 0.14) -- (0.12, 0.14) -- (0.35, 0) -- (0.12, -0.14) -- (-0.35, -0.14) -- cycle;
+            \ifx&#1&\else
+                \node[left=3pt, font=\small\bfseries] at (-0.35, 0) {#1};
+            \fi
+        }
+    },
+    pics/ioport/.default={}
+}
+
+% --- 2.3 IO Pin (Hollow pad / external pin circle with lead stub) ---
+\tikzset{
+    pics/iopin/.style args={#1/#2}{
+        code={
+            \coordinate (-center) at (0, 0);
+            \coordinate (-lead) at (-#2, 0);
+            \coordinate (-in) at (-#2, 0);
+            \coordinate (-out) at (#1, 0);
+            \draw[adc line] (-#2, 0) -- (-#1, 0);
+            \draw[adc line, fill=white] (0, 0) circle (#1);
+        }
+    },
+    pics/iopin/.default={2.4pt/0.3cm},
+    pics/pin_small/.style={
+        code={
+            \coordinate (-center) at (0, 0);
+            \coordinate (-lead) at (-0.25cm, 0);
+            \coordinate (-in) at (-0.25cm, 0);
+            \coordinate (-out) at (2.0pt, 0);
+            \draw[adc line] (-0.25cm, 0) -- (-2.0pt, 0);
+            \draw[adc line, fill=white] (0, 0) circle (2.0pt);
+        }
+    },
+    pics/pin_large/.style={
+        code={
+            \coordinate (-center) at (0, 0);
+            \coordinate (-lead) at (-0.35cm, 0);
+            \coordinate (-in) at (-0.35cm, 0);
+            \coordinate (-out) at (3.2pt, 0);
+            \draw[adc line] (-0.35cm, 0) -- (-3.2pt, 0);
+            \draw[adc line, fill=white] (0, 0) circle (3.2pt);
+        }
+    }
+}
+
+% --- 2.4 NoConn (Floating / unconnected terminal marker: square with X) ---
+\tikzset{
+    pics/noconn/.style args={#1}{
+        code={
+            \coordinate (-center) at (0, 0);
+            \draw[adc line] (-#1, -#1) rectangle (#1, #1);
+            \draw[adc line] (-#1, -#1) -- (#1, #1);
+            \draw[adc line] (-#1, #1) -- (#1, -#1);
+        }
+    },
+    pics/noconn/.default={2.5pt}
+}
+
+% --- 2.5 Jumper (Wire hop / bridge arc for crossing wires without connection) ---
+\tikzset{
+    pics/jumper/.style args={#1}{
+        code={
+            \coordinate (-in) at (-#1, 0);
+            \coordinate (-out) at (#1, 0);
+            \coordinate (-peak) at (0, #1);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line] (-#1, 0) arc[start angle=180, end angle=0, radius=#1];
+        }
+    },
+    pics/jumper/.default={0.2cm}
+}
+
+% --- 2.6 Bus Width Tick ---
+\tikzset{
+    pics/bus_tick/.style args={#1}{
+        code={
+            \coordinate (-center) at (0, 0);
+            \draw[thick, black] (-0.1, -0.15) -- (0.1, 0.15);
+            \node[below=1pt, font=\scriptsize\bfseries, text=black] at (0, -0.1) {#1};
+        }
+    },
+    pics/bus_tick/.default={4b}
+}
+
+% =============================================================================
+% 3. POWER & GROUND
+% =============================================================================
+
+% --- 3.1 VDD / Power Supply Rail ---
+\tikzset{
+    pics/vdd/.style args={#1}{
+        code={
+            \coordinate (-center) at (0, 0);
+            \coordinate (-pin) at (0, -0.3);
+            \draw[adc line] (0, -0.3) -- (0, 0);
+            \draw[line width=1.6pt, black] (-0.35, 0) -- (0.35, 0);
+            \ifx&#1&\else
+                \node[above=1pt, font=\footnotesize\bfseries] at (0, 0) {#1};
+            \fi
+        }
+    },
+    pics/vdd/.default={$V_{\mathrm{DD}}$}
+}
+
+% --- 3.2 VSS / Ground Rail (3-tier horizontal bar ground) ---
+\tikzset{
+    pics/gnd/.style args={#1}{
+        code={
+            \coordinate (-center) at (0, 0);
+            \coordinate (-pin) at (0, 0.25);
+            \draw[adc line] (0, 0.25) -- (0, 0);
+            \draw[line width=1.3pt, black] (-0.30, 0) -- (0.30, 0);
+            \draw[line width=1.1pt, black] (-0.20, -0.07) -- (0.20, -0.07);
+            \draw[line width=0.9pt, black] (-0.10, -0.14) -- (0.10, -0.14);
+            \ifx&#1&\else
+                \node[below=2pt, font=\tiny\bfseries] at (0, -0.14) {#1};
+            \fi
+        }
+    },
+    pics/gnd/.default={}
+}
+
+% =============================================================================
+% 4. PASSIVES (Resistors, Capacitors, Inductors)
+% =============================================================================
+
+% --- 4.1 Resistor (Zigzag IEEE style) ---
+\tikzset{
+    pics/res/.style args={#1}{
+        code={
+            \coordinate (-p) at (-0.6, 0);
+            \coordinate (-n) at (0.6, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line] (-0.6, 0) -- (-0.4, 0)
+                -- (-0.33, 0.16) -- (-0.2, -0.16) -- (-0.07, 0.16)
+                -- (0.06, -0.16) -- (0.19, 0.16) -- (0.32, -0.16)
+                -- (0.4, 0) -- (0.6, 0);
+            \ifx&#1&\else
+                \node[above=3pt, font=\footnotesize\bfseries] at (0, 0.16) {#1};
+            \fi
+        }
+    },
+    pics/res/.default={$R$}
+}
+
+% --- 4.2 Variable Resistor (Zigzag with 45-degree arrow) ---
+\tikzset{
+    pics/vres/.style args={#1}{
+        code={
+            \coordinate (-p) at (-0.6, 0);
+            \coordinate (-n) at (0.6, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line] (-0.6, 0) -- (-0.4, 0)
+                -- (-0.33, 0.16) -- (-0.2, -0.16) -- (-0.07, 0.16)
+                -- (0.06, -0.16) -- (0.19, 0.16) -- (0.32, -0.16)
+                -- (0.4, 0) -- (0.6, 0);
+            \draw[adc arrow, line width=0.9pt] (-0.35, -0.3) -- (0.35, 0.35);
+            \ifx&#1&\else
+                \node[above=3pt, font=\footnotesize\bfseries] at (0, 0.25) {#1};
+            \fi
+        }
+    },
+    pics/vres/.default={$R_{\mathrm{adj}}$}
+}
+
+% --- 4.3 Capacitor (Parallel plates) ---
+\tikzset{
+    pics/cap/.style args={#1}{
+        code={
+            \coordinate (-p) at (-0.45, 0);
+            \coordinate (-n) at (0.45, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line] (-0.45, 0) -- (-0.08, 0);
+            \draw[adc line] (0.08, 0) -- (0.45, 0);
+            \draw[line width=1.5pt, black] (-0.08, -0.22) -- (-0.08, 0.22);
+            \draw[line width=1.5pt, black] (0.08, -0.22) -- (0.08, 0.22);
+            \ifx&#1&\else
+                \node[above=0.5pt, font=\footnotesize\bfseries] at (0, 0.22) {#1};
+            \fi
+        }
+    },
+    pics/cap/.default={$C$}
+}
+
+% --- 4.4 Variable Capacitor (Parallel plates with diagonal arrow) ---
+\tikzset{
+    pics/vcap/.style args={#1}{
+        code={
+            \coordinate (-p) at (-0.45, 0);
+            \coordinate (-n) at (0.45, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line] (-0.45, 0) -- (-0.08, 0);
+            \draw[adc line] (0.08, 0) -- (0.45, 0);
+            \draw[line width=1.5pt, black] (-0.08, -0.22) -- (-0.08, 0.22);
+            \draw[line width=1.5pt, black] (0.08, -0.22) -- (0.08, 0.22);
+            \draw[adc arrow, line width=0.9pt] (-0.35, -0.30) -- (0.35, 0.32);
+            \ifx&#1&\else
+                \node[above=0.5pt, font=\footnotesize\bfseries] at (0, 0.25) {#1};
+            \fi
+        }
+    },
+    pics/vcap/.default={$C_{\mathrm{adj}}$}
+}
+
+% --- 4.5 Inductor (Loops) ---
+\tikzset{
+    pics/ind/.style args={#1}{
+        code={
+            \coordinate (-p) at (-0.6, 0);
+            \coordinate (-n) at (0.6, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line] (-0.6, 0) -- (-0.4, 0);
+            \draw[adc line] (-0.4, 0) arc[start angle=180, end angle=0, radius=0.1];
+            \draw[adc line] (-0.2, 0) arc[start angle=180, end angle=0, radius=0.1];
+            \draw[adc line] (0.0, 0) arc[start angle=180, end angle=0, radius=0.1];
+            \draw[adc line] (0.2, 0) arc[start angle=180, end angle=0, radius=0.1];
+            \draw[adc line] (0.4, 0) -- (0.6, 0);
+            \ifx&#1&\else
+                \node[above=2pt, font=\footnotesize\bfseries] at (0, 0.15) {#1};
+            \fi
+        }
+    },
+    pics/ind/.default={$L$}
+}
+
+% =============================================================================
+% 5. SWITCHES
+% =============================================================================
+
+% --- 5.1 Visio-Style Open Switch (SW2 open) ---
+\tikzset{
+    pics/sw_open/.style args={#1}{
+        code={
+            \coordinate (-in) at (-0.45, 0);
+            \coordinate (-out) at (0.45, 0);
+            \coordinate (-clk) at (0, 0.30);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line] (-0.45, 0) -- (-0.25, 0);
+            \draw[adc line] (0.25, 0) -- (0.45, 0);
+            \filldraw[black] (-0.25, 0) circle (1.3pt);
+            \filldraw[black] (0.25, 0) circle (1.3pt);
+            \draw[adc line, line width=1.1pt] (-0.25, 0) -- (0.22, 0.22);
+            \ifx&#1&\else
+                \node[above=0.5pt, font=\footnotesize\bfseries] at (0, 0.18) {#1};
+            \fi
+        }
+    },
+    pics/sw_open/.default={$\Phi$}
+}
+
+% --- 5.2 Visio-Style Closed Switch (SW2 close) ---
+\tikzset{
+    pics/sw_close/.style args={#1}{
+        code={
+            \coordinate (-in) at (-0.45, 0);
+            \coordinate (-out) at (0.45, 0);
+            \coordinate (-clk) at (0, 0.22);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line] (-0.45, 0) -- (-0.25, 0);
+            \draw[adc line] (0.25, 0) -- (0.45, 0);
+            \filldraw[black] (-0.25, 0) circle (1.3pt);
+            \filldraw[black] (0.25, 0) circle (1.3pt);
+            \draw[adc line, line width=1.2pt] (-0.25, 0) -- (0.25, 0);
+            \ifx&#1&\else
+                \node[above=0.5pt, font=\footnotesize\bfseries] at (0, 0.04) {#1};
+            \fi
+        }
+    },
+    pics/sw_close/.default={$\Phi$}
+}
+
+% --- 5.3 SPDT / 2-Port Switch ---
+\tikzset{
+    pics/sw_2port/.style args={#1}{
+        code={
+            \coordinate (-in) at (-0.5, 0);
+            \coordinate (-out1) at (0.5, 0.3);
+            \coordinate (-out2) at (0.5, -0.3);
+            \coordinate (-clk) at (0, 0.4);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line] (-0.5, 0) -- (-0.25, 0);
+            \draw[adc line] (0.25, 0.3) -- (0.5, 0.3);
+            \draw[adc line] (0.25, -0.3) -- (0.5, -0.3);
+            \filldraw[black] (-0.25, 0) circle (1.3pt);
+            \filldraw[black] (0.25, 0.3) circle (1.3pt);
+            \filldraw[black] (0.25, -0.3) circle (1.3pt);
+            \draw[adc line, line width=1.1pt] (-0.25, 0) -- (0.22, 0.28);
+            \ifx&#1&\else
+                \node[above=2pt, font=\footnotesize\bfseries] at (0, 0.35) {#1};
+            \fi
+        }
+    },
+    pics/sw_2port/.default={$\Phi$}
+}
+
+% =============================================================================
+% 6. ATOMIC TRANSISTORS (NMOS & PMOS with Source Arrows)
+% =============================================================================
+
+% --- 6.1 NMOS Transistor ---
+\tikzset{
+    pics/nmos/.style args={#1}{
+        code={
+            \coordinate (-g) at (-0.45, 0);
+            \coordinate (-d) at (0.25, 0.55);
+            \coordinate (-s) at (0.25, -0.55);
+            \coordinate (-b) at (0.45, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line] (-0.45, 0) -- (-0.1, 0);
+            \draw[line width=1.3pt, black] (-0.1, -0.22) -- (-0.1, 0.22);
+            \draw[line width=1.3pt, black] (0.05, -0.35) -- (0.05, 0.35);
+            \draw[adc line] (0.05, 0.28) -- (0.25, 0.28) -- (0.25, 0.55);
+            \draw[adc line] (0.05, -0.28) -- (0.25, -0.28) -- (0.25, -0.55);
+            % Source arrow on horizontal leg pointing outwards to the corner
+            \draw[black, fill=black] (0.25, -0.28) -- (0.14, -0.23) -- (0.14, -0.33) -- cycle;
+            \ifx&#1&\else
+                \node[right=2pt, font=\footnotesize\bfseries] at (0.3, 0) {#1};
+            \fi
+        }
+    },
+    pics/nmos/.default={$M_{\mathrm{N}}$}
+}
+
+% --- 6.2 PMOS Transistor ---
+\tikzset{
+    pics/pmos/.style args={#1}{
+        code={
+            \coordinate (-g) at (-0.45, 0);
+            \coordinate (-s) at (0.25, 0.55);
+            \coordinate (-d) at (0.25, -0.55);
+            \coordinate (-b) at (0.45, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line] (-0.45, 0) -- (-0.1, 0);
+            \draw[line width=1.3pt, black] (-0.1, -0.22) -- (-0.1, 0.22);
+            \draw[line width=1.3pt, black] (0.05, -0.35) -- (0.05, 0.35);
+            \draw[adc line] (0.05, 0.28) -- (0.25, 0.28) -- (0.25, 0.55);
+            \draw[adc line] (0.05, -0.28) -- (0.25, -0.28) -- (0.25, -0.55);
+            % Source arrow on horizontal leg pointing inwards (left, touching channel)
+            \draw[black, fill=black] (0.07, 0.28) -- (0.18, 0.33) -- (0.18, 0.23) -- cycle;
+            \ifx&#1&\else
+                \node[right=2pt, font=\footnotesize\bfseries] at (0.3, 0) {#1};
+            \fi
+        }
+    },
+    pics/pmos/.default={$M_{\mathrm{P}}$}
+}
+
+% =============================================================================
+% 7. AMPLIFIERS & ACTIVE BUILDING BLOCKS
+% =============================================================================
+
+% --- 7.1 Single-Ended Opamp (Standardized +/-0.25cm diff pitch) ---
+\tikzset{
+    pics/opamp/.style args={#1}{
+        code={
+            \coordinate (-inn) at (-0.6, 0.25);
+            \coordinate (-inp) at (-0.6, -0.25);
+            \coordinate (-out) at (0.6, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line, fill=white] (-0.6, 0.55) -- (-0.6, -0.55) -- (0.6, 0) -- cycle;
+            \node[font=\tiny\bfseries, black] at (-0.45, 0.25) {$-$};
+            \node[font=\tiny\bfseries, black] at (-0.45, -0.25) {$+$};
+            \ifx&#1&\else
+                \node[font=\footnotesize\bfseries, align=center] at (-0.15, 0) {#1};
+            \fi
+        }
+    },
+    pics/opamp/.default={$A_v$}
+}
+
+% --- 7.2 Fully Differential Opamp (Triangle opamp shape, +/-0.25cm diff pitch) ---
+\tikzset{
+    pics/diff_opamp/.style args={#1}{
+        code={
+            \coordinate (-inn) at (-1.05, 0.25);
+            \coordinate (-inp) at (-1.05, -0.25);
+            \coordinate (-outp) at (0.394, 0.25);
+            \coordinate (-outn) at (0.394, -0.25);
+            \coordinate (-cmfb) at (0, -0.40);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line, fill=white] (-1.05, 0.80) -- (-1.05, -0.80) -- (1.05, 0) -- cycle;
+            \node[font=\tiny\bfseries, black] at (-0.90, 0.25) {$-$};
+            \node[font=\tiny\bfseries, black] at (-0.90, -0.25) {$+$};
+            \node[font=\tiny\bfseries, black] at (0.26, 0.16) {$+$};
+            \node[font=\tiny\bfseries, black] at (0.26, -0.16) {$-$};
+            \ifx&#1&\else
+                \node[font=\tiny\bfseries, align=center] at (-0.32, 0) {#1};
+            \fi
+        }
+    },
+    pics/diff_opamp/.default={2-stage\\Opamp}
+}
+
+% --- 7.3 Comparator (Standardized +/-0.25cm diff pitch) ---
+\tikzset{
+    pics/comparator/.style args={#1}{
+        code={
+            \coordinate (-inn) at (-0.6, 0.25);
+            \coordinate (-inp) at (-0.6, -0.25);
+            \coordinate (-out) at (0.6, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line, fill=white] (-0.6, 0.50) -- (-0.6, -0.50) -- (0.6, 0) -- cycle;
+            \node[font=\tiny\bfseries] at (-0.45, 0.25) {$-$};
+            \node[font=\tiny\bfseries] at (-0.45, -0.25) {$+$};
+            \draw[thick, black] (-0.12, -0.15) -- (-0.12, 0.1) -- (0.12, 0.1) -- (0.12, -0.1) -- (-0.12, -0.1);
+        }
+    },
+    pics/comparator/.default={}
+}
+
+% --- 7.4 Digital Inverter & Buffer ---
+\tikzset{
+    pics/inv/.style args={#1}{
+        code={
+            \coordinate (-in) at (-0.5, 0);
+            \coordinate (-out) at (0.6, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line, fill=white] (-0.5, 0.35) -- (-0.5, -0.35) -- (0.35, 0) -- cycle;
+            \draw[adc line, fill=white] (0.47, 0) circle (0.12);
+        }
+    },
+    pics/inv/.default={}
+}
+
+\tikzset{
+    pics/buffer/.style args={#1}{
+        code={
+            \coordinate (-in) at (-0.5, 0);
+            \coordinate (-out) at (0.5, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line, fill=white] (-0.5, 0.35) -- (-0.5, -0.35) -- (0.5, 0) -- cycle;
+            \ifx&#1&\else
+                \node[font=\tiny\bfseries, align=center] at (-0.15, 0) {#1};
+            \fi
+        }
+    },
+    pics/buffer/.default={}
+}
+
+% =============================================================================
+% 8. CONVERTERS (Single-Ended & Differential Visio Shapes) & MUX/DEMUX
+% =============================================================================
+
+% --- 8.1 Single-Ended ADC (Visio "<|" pentagon) ---
+\tikzset{
+    pics/adc_se/.style args={#1}{
+        code={
+            \coordinate (-in) at (-1.0, 0);
+            \coordinate (-refp) at (0.1, 0.50);
+            \coordinate (-refn) at (0.1, -0.50);
+            \coordinate (-clk) at (0.6, -0.50);
+            \coordinate (-dout) at (1.0, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line, fill=white] (-1.0, 0) -- (-0.35, 0.50) -- (1.0, 0.50) -- (1.0, -0.50) -- (-0.35, -0.50) -- cycle;
+            \node[font=\footnotesize\bfseries, align=center] at (0.2, 0) {#1};
+        }
+    },
+    pics/adc_se/.default={ADC}
+}
+
+% --- 8.2 Differential ADC (Exact same Visio "<|" pentagon, +/-0.25cm diff pins on border) ---
+\tikzset{
+    pics/adc_diff/.style args={#1}{
+        code={
+            \coordinate (-inp) at (-0.675, 0.25);
+            \coordinate (-inn) at (-0.675, -0.25);
+            \coordinate (-refp) at (0.15, 0.50);
+            \coordinate (-refn) at (0.15, -0.50);
+            \coordinate (-clk) at (0.65, -0.50);
+            \coordinate (-dout) at (1.15, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line, fill=white] (-1.0, 0) -- (-0.35, 0.50) -- (1.15, 0.50) -- (1.15, -0.50) -- (-0.35, -0.50) -- cycle;
+            \node[font=\scriptsize\bfseries, align=center] at (0.30, 0) {#1};
+        }
+    },
+    pics/adc_diff/.default={4b\\Flash}
+}
+
+% --- 8.3 Single-Ended DAC (Visio "|>" pentagon) ---
+\tikzset{
+    pics/dac_se/.style args={#1}{
+        code={
+            \coordinate (-din) at (-1.0, 0);
+            \coordinate (-refp) at (-0.35, 0.50);
+            \coordinate (-refn) at (-0.35, -0.50);
+            \coordinate (-out) at (1.0, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line, fill=white] (-1.0, 0.50) -- (0.35, 0.50) -- (1.0, 0) -- (0.35, -0.50) -- (-1.0, -0.50) -- cycle;
+            \node[font=\footnotesize\bfseries, align=center] at (-0.2, 0) {#1};
+        }
+    },
+    pics/dac_se/.default={DAC}
+}
+
+% --- 8.4 Differential DAC (Exact same Visio "|>" pentagon, +/-0.25cm diff pins on border) ---
+\tikzset{
+    pics/dac_diff/.style args={#1}{
+        code={
+            \coordinate (-din) at (-1.0, 0);
+            \coordinate (-refp) at (-0.35, 0.50);
+            \coordinate (-refn) at (-0.35, -0.50);
+            \coordinate (-outp) at (0.675, 0.25);
+            \coordinate (-outn) at (0.675, -0.25);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line, fill=white] (-1.0, 0.50) -- (0.35, 0.50) -- (1.0, 0) -- (0.35, -0.50) -- (-1.0, -0.50) -- cycle;
+            \node[font=\footnotesize\bfseries, align=center] at (-0.2, 0) {#1};
+        }
+    },
+    pics/dac_diff/.default={R-DAC}
+}
+
+% --- 8.5 Differential Sub-ADC / SAR Channel Block (Visio "<|" pentagon, +/-0.25cm diff pins) ---
+\tikzset{
+    pics/subadc/.style args={#1}{
+        code={
+            \coordinate (-inp) at (-0.675, 0.25);
+            \coordinate (-inn) at (-0.675, -0.25);
+            \coordinate (-clk) at (0.3, -0.50);
+            \coordinate (-dout) at (0.95, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line, fill=white] (-1.0, 0) -- (-0.35, 0.50) -- (0.95, 0.50) -- (0.95, -0.50) -- (-0.35, -0.50) -- cycle;
+            \node[font=\footnotesize\bfseries, align=center] at (0.2, 0) {#1};
+        }
+    },
+    pics/subadc/.default={$\text{SAR}_k$}
+}
+
+% --- 8.6 4:1 MUX (Pins strictly on the trapezoid shape border) ---
+\tikzset{
+    pics/mux4to1/.style args={#1}{
+        code={
+            \coordinate (-in1) at (-0.45, 0.54);
+            \coordinate (-in2) at (-0.45, 0.18);
+            \coordinate (-in3) at (-0.45, -0.18);
+            \coordinate (-in4) at (-0.45, -0.54);
+            \coordinate (-out) at (0.45, 0);
+            \coordinate (-sel) at (0, -0.60);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line, fill=white] (-0.45, 0.78) -- (0.45, 0.42) -- (0.45, -0.42) -- (-0.45, -0.78) -- cycle;
+            \node[font=\scriptsize\bfseries, align=center] at (0, 0) {4:1\\MUX};
+        }
+    },
+    pics/mux4to1/.default={}
+}
+
+% --- 8.7 1:4 DEMUX (Pins strictly on the trapezoid shape border) ---
+\tikzset{
+    pics/demux1to4/.style args={#1}{
+        code={
+            \coordinate (-in) at (-0.45, 0);
+            \coordinate (-out1) at (0.45, 0.54);
+            \coordinate (-out2) at (0.45, 0.18);
+            \coordinate (-out3) at (0.45, -0.18);
+            \coordinate (-out4) at (0.45, -0.54);
+            \coordinate (-sel) at (0, -0.60);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line, fill=white] (-0.45, 0.42) -- (0.45, 0.78) -- (0.45, -0.78) -- (-0.45, -0.42) -- cycle;
+            \node[font=\scriptsize\bfseries, align=center] at (0, 0) {1:4\\DEMUX};
+        }
+    },
+    pics/demux1to4/.default={}
+}
+
+% =============================================================================
+% 9. INPUT ALL-PASS FILTER (APF) — Border-Anchored Pins
+% =============================================================================
+
+\tikzset{
+    pics/apf_block/.style args={#1}{
+        code={
+            \node[adc block, minimum width=2.4cm, minimum height=1.0cm] (box) at (0, 0) {
+                \textbf{Passive APF}\\\scriptsize ($R_{\mathrm{in}}$, $T_d \approx T_s/2$)
+            };
+            \coordinate (-inp) at ($(box.west) + (0, 0.25)$);
+            \coordinate (-inn) at ($(box.west) + (0, -0.25)$);
+            \coordinate (-outp) at ($(box.east) + (0, 0.25)$);
+            \coordinate (-outn) at ($(box.east) + (0, -0.25)$);
+            \coordinate (-center) at (box.center);
+        }
+    },
+    pics/apf_block/.default={}
+}
+
+% =============================================================================
+% 10. DSP & DIGITAL CALIBRATION BLOCKS — Border-Anchored Pins
+% =============================================================================
+
+% --- 10.1 Summing Node ---
+\tikzset{
+    pics/sum/.style args={#1/#2}{
+        code={
+            \coordinate (-in1) at (-0.3, 0);
+            \coordinate (-in2) at (0, -0.3);
+            \coordinate (-in3) at (0, 0.3);
+            \coordinate (-out) at (0.3, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc circle, minimum size=0.6cm] (0, 0) circle (0.3cm);
+            \node[font=\small\bfseries] at (0, 0) {$+$};
+            \ifx&#1&\else
+                \node[font=\tiny\bfseries] at (-0.42, 0.15) {#1};
+            \fi
+            \ifx&#2&\else
+                \node[font=\tiny\bfseries] at (0.18, -0.4) {#2};
+            \fi
+        }
+    },
+    pics/sum/.default={+/$-$}
+}
+
+% --- 10.2 Multiplier Circle ---
+\tikzset{
+    pics/mult/.style args={#1}{
+        code={
+            \coordinate (-in1) at (-0.3, 0);
+            \coordinate (-in2) at (0, -0.3);
+            \coordinate (-in3) at (0, 0.3);
+            \coordinate (-out) at (0.3, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc circle, minimum size=0.6cm] (0, 0) circle (0.3cm);
+            \node[font=\small\bfseries] at (0, 0) {$\times$};
+            \ifx&#1&\else
+                \node[above=2pt, font=\scriptsize\bfseries] at (0, 0.3) {#1};
+            \fi
+        }
+    },
+    pics/mult/.default={}
+}
+
+% --- 10.3 FIR Interpolation Filter Block ---
+\tikzset{
+    pics/fir_block/.style args={#1/#2}{
+        code={
+            \node[adc block, minimum width=2.8cm, minimum height=1.1cm, inner sep=5pt] (box) at (0, 0) {
+                \textbf{#1}\\[-1pt]
+                \scriptsize (#2)
+            };
+            \coordinate (-in) at (box.west);
+            \coordinate (-out) at (box.east);
+            \coordinate (-south) at (box.south);
+            \coordinate (-center) at (box.center);
+        }
+    },
+    pics/fir_block/.default={7-Tap Interpolation Filter/$\tau = +0.25\,T_s$}
+}
+
+% --- 10.4 LMS Correlator Engine Block ---
+\tikzset{
+    pics/lms_block/.style args={#1}{
+        code={
+            \node[adc block, minimum width=1.7cm, minimum height=0.75cm, inner sep=4pt, font=\scriptsize\bfseries] (box) at (0, 0) {
+                Corr LMS\\[-1pt]#1
+            };
+            \coordinate (-in) at (box.west);
+            \coordinate (-out) at (box.east);
+            \coordinate (-center) at (box.center);
+        }
+    },
+    pics/lms_block/.default={$\alpha_k$}
+}
+
+% --- 10.5 Delay Element ---
+\tikzset{
+    pics/delay_block/.style args={#1}{
+        code={
+            \node[adc block, minimum width=1.2cm, minimum height=0.75cm, inner sep=4pt, font=\small\bfseries] (box) at (0, 0) {
+                #1
+            };
+            \coordinate (-in) at (box.west);
+            \coordinate (-out) at (box.east);
+            \coordinate (-center) at (box.center);
+        }
+    },
+    pics/delay_block/.default={$z^{-L}$}
+}
+
+% =============================================================================
+% 11. SOURCES (DC Voltage, Sine Voltage, Current Source)
+% =============================================================================
+
+% --- 11.1 DC Voltage Source ---
+\tikzset{
+    pics/dc_source/.style args={#1}{
+        code={
+            \coordinate (-p) at (0, 0.55);
+            \coordinate (-n) at (0, -0.55);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line] (0, 0.55) -- (0, 0.30);
+            \draw[adc line] (0, -0.55) -- (0, -0.30);
+            \draw[adc circle] (0, 0) circle (0.30cm);
+            \node[font=\tiny\bfseries] at (0, 0.14) {$+$};
+            \node[font=\tiny\bfseries] at (0, -0.14) {$-$};
+            \ifx&#1&\else
+                \node[right=2pt, font=\footnotesize\bfseries] at (0.30, 0) {#1};
+            \fi
+        }
+    },
+    pics/dc_source/.default={$V_{\mathrm{DC}}$}
+}
+
+% --- 11.2 Sine Signal Source ---
+\tikzset{
+    pics/sin_source/.style args={#1}{
+        code={
+            \coordinate (-p) at (0, 0.55);
+            \coordinate (-n) at (0, -0.55);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line] (0, 0.55) -- (0, 0.30);
+            \draw[adc line] (0, -0.55) -- (0, -0.30);
+            \draw[adc circle] (0, 0) circle (0.30cm);
+            \draw[thick, black] (-0.18, 0) .. controls (-0.09, 0.18) and (-0.03, 0.18) .. (0, 0)
+                               .. controls (0.03, -0.18) and (0.09, -0.18) .. (0.18, 0);
+            \ifx&#1&\else
+                \node[right=2pt, font=\footnotesize\bfseries] at (0.30, 0) {#1};
+            \fi
+        }
+    },
+    pics/sin_source/.default={$V_{\mathrm{in}}$}
+}
+
+% --- 11.3 Current Source ---
+\tikzset{
+    pics/current_source/.style args={#1}{
+        code={
+            \coordinate (-p) at (0, 0.55);
+            \coordinate (-n) at (0, -0.55);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line] (0, 0.55) -- (0, 0.30);
+            \draw[adc line] (0, -0.55) -- (0, -0.30);
+            \draw[adc circle] (0, 0) circle (0.30cm);
+            \draw[adc arrow] (0, 0.20) -- (0, -0.20);
+            \ifx&#1&\else
+                \node[right=2pt, font=\footnotesize\bfseries] at (0.30, 0) {#1};
+            \fi
+        }
+    },
+    pics/current_source/.default={$I_{\mathrm{B}}$}
+}
+
+% =============================================================================
+% 12. DIGITAL LOGIC GATES & FLIP-FLOPS (Visio Standard Shapes)
+% =============================================================================
+
+% --- 12.1 2-Input AND Gate ---
+\tikzset{
+    pics/and2/.style args={#1}{
+        code={
+            \coordinate (-in1) at (-0.45, 0.16);
+            \coordinate (-in2) at (-0.45, -0.16);
+            \coordinate (-out) at (0.45, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line, fill=white] (-0.45, 0.32) -- (0.05, 0.32)
+                arc[start angle=90, end angle=-90, radius=0.32]
+                -- (-0.45, -0.32) -- cycle;
+            \ifx&#1&\else
+                \node[font=\tiny\bfseries] at (-0.08, 0) {#1};
+            \fi
+        }
+    },
+    pics/and2/.default={}
+}
+
+% --- 12.2 2-Input NAND Gate ---
+\tikzset{
+    pics/nand2/.style args={#1}{
+        code={
+            \coordinate (-in1) at (-0.45, 0.16);
+            \coordinate (-in2) at (-0.45, -0.16);
+            \coordinate (-out) at (0.55, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line, fill=white] (-0.45, 0.32) -- (0.05, 0.32)
+                arc[start angle=90, end angle=-90, radius=0.32]
+                -- (-0.45, -0.32) -- cycle;
+            \draw[adc line, fill=white] (0.46, 0) circle (0.09);
+            \ifx&#1&\else
+                \node[font=\tiny\bfseries] at (-0.08, 0) {#1};
+            \fi
+        }
+    },
+    pics/nand2/.default={}
+}
+
+% --- 12.3 2-Input OR Gate ---
+\tikzset{
+    pics/or2/.style args={#1}{
+        code={
+            \coordinate (-in1) at (-0.40, 0.16);
+            \coordinate (-in2) at (-0.40, -0.16);
+            \coordinate (-out) at (0.45, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line, fill=white] (-0.45, 0.32) .. controls (-0.28, 0.12) and (-0.28, -0.12) .. (-0.45, -0.32)
+                -- (-0.05, -0.32) .. controls (0.20, -0.32) and (0.38, -0.14) .. (0.45, 0)
+                .. controls (0.38, 0.14) and (0.20, 0.32) .. (-0.05, 0.32) -- cycle;
+            \ifx&#1&\else
+                \node[font=\tiny\bfseries] at (-0.02, 0) {#1};
+            \fi
+        }
+    },
+    pics/or2/.default={}
+}
+
+% --- 12.4 2-Input XOR Gate ---
+\tikzset{
+    pics/xor2/.style args={#1}{
+        code={
+            \coordinate (-in1) at (-0.48, 0.16);
+            \coordinate (-in2) at (-0.48, -0.16);
+            \coordinate (-out) at (0.45, 0);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line] (-0.53, 0.32) .. controls (-0.36, 0.12) and (-0.36, -0.12) .. (-0.53, -0.32);
+            \draw[adc line, fill=white] (-0.45, 0.32) .. controls (-0.28, 0.12) and (-0.28, -0.12) .. (-0.45, -0.32)
+                -- (-0.05, -0.32) .. controls (0.20, -0.32) and (0.38, -0.14) .. (0.45, 0)
+                .. controls (0.38, 0.14) and (0.20, 0.32) .. (-0.05, 0.32) -- cycle;
+            \ifx&#1&\else
+                \node[font=\tiny\bfseries] at (-0.02, 0) {#1};
+            \fi
+        }
+    },
+    pics/xor2/.default={}
+}
+
+% --- 12.5 D Flip-Flop (DFF) ---
+\tikzset{
+    pics/dff/.style args={#1}{
+        code={
+            \coordinate (-d) at (-0.55, 0.30);
+            \coordinate (-clk) at (-0.55, -0.30);
+            \coordinate (-q) at (0.55, 0.30);
+            \coordinate (-qb) at (0.55, -0.30);
+            \coordinate (-rst) at (0, -0.55);
+            \coordinate (-center) at (0, 0);
+            \draw[adc line, fill=white] (-0.55, 0.55) rectangle (0.55, -0.55);
+            % Clock triangle
+            \draw[adc line] (-0.55, -0.20) -- (-0.40, -0.30) -- (-0.55, -0.40);
+            \node[font=\scriptsize\bfseries] at (-0.38, 0.30) {D};
+            \node[font=\scriptsize\bfseries] at (0.38, 0.30) {Q};
+            \node[font=\scriptsize\bfseries] at (0.35, -0.30) {$\overline{\mathrm{Q}}$};
+            \ifx&#1&\else
+                \node[font=\tiny\bfseries] at (0, 0) {#1};
+            \fi
+        }
+    },
+    pics/dff/.default={DFF}
+}
+
+% =============================================================================
+% 13. WAVEFORM & EDGE PRIMITIVES
+% =============================================================================
+
+\tikzset{
+    pics/rise_edge/.style args={#1}{
+        code={
+            \coordinate (-center) at (0, 0);
+            \draw[adc line, line width=1.1pt] (-0.3, -0.2) -- (0, -0.2) -- (0, 0.2) -- (0.3, 0.2);
+            \ifx&#1&\else
+                \node[below=2pt, font=\tiny\bfseries] at (0, -0.2) {#1};
+            \fi
+        }
+    },
+    pics/rise_edge/.default={}
+}
+
+\tikzset{
+    pics/fall_edge/.style args={#1}{
+        code={
+            \coordinate (-center) at (0, 0);
+            \draw[adc line, line width=1.1pt] (-0.3, 0.2) -- (0, 0.2) -- (0, -0.2) -- (0.3, -0.2);
+            \ifx&#1&\else
+                \node[below=2pt, font=\tiny\bfseries] at (0, -0.2) {#1};
+            \fi
+        }
+    },
+    pics/fall_edge/.default={}
+}
+
+\endinput

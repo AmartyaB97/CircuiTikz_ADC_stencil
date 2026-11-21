@@ -1,0 +1,451 @@
+\documentclass{article}
+\usepackage[margin=0.2in,paperwidth=11.5in,paperheight=15.0in]{geometry}
+\usepackage[american]{circuitikz}
+\usepackage{../tikz_stencils/adc_stencils}
+\pagestyle{empty}
+
+\begin{document}
+\noindent\centering
+
+\begin{tikzpicture}[>=Latex]
+
+    % =========================================================================
+    % TITLE
+    % =========================================================================
+    \node[anchor=west, font=\LARGE\bfseries] at (-5.0, 16.0) {Visio-Style CircuiTikZ Stencil Library (\texttt{adc\_stencils.sty})};
+    \node[anchor=west, font=\small, text=black!75] at (-5.0, 15.5) {Visual Catalog of Stencils with Named Port Anchors \& Full-Differential End-to-End Test Schematic};
+    \draw[thick, black] (-5.0, 15.2) -- (18.5, 15.2);
+
+    % =========================================================================
+    % SECTION 1: INTERCONNECT, TERMINALS, PINS, & I/O PORTS
+    % =========================================================================
+    \node[anchor=west, font=\large\bfseries] at (-5.0, 14.5) {1. Interconnect, Terminals, Pins, \& I/O Ports};
+
+    \pic (t_sm) at (-4.0, 13.5) {terminal_small};
+    \node[below=3pt, font=\scriptsize] at (-4.0, 13.5) {\texttt{terminal\_small}};
+    \node[font=\tiny\ttfamily, above=2pt] at (t_sm-center) {-center};
+
+    \pic (t_lg) at (-1.7, 13.5) {terminal_large};
+    \node[below=3pt, font=\scriptsize] at (-1.7, 13.5) {\texttt{terminal\_large}};
+    \node[font=\tiny\ttfamily, above=2pt] at (t_lg-center) {-center};
+
+    \pic (iopt) at (1.0, 13.5) {ioport={$V_{\mathrm{in}}$}};
+    \node[below=5pt, font=\scriptsize] at (1.0, 13.5) {\texttt{ioport}};
+    \fill[black] (iopt-out) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-out};
+
+    \pic (iop) at (3.8, 13.5) {iopin};
+    \node[below=3pt, font=\scriptsize] at (3.8, 13.5) {\texttt{iopin}};
+    \fill[black] (iop-in) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-in};
+    \node[font=\tiny\ttfamily, above=3pt] at (iop-center) {-center};
+
+    \pic (nc) at (6.0, 13.5) {noconn};
+    \node[below=3pt, font=\scriptsize] at (6.0, 13.5) {\texttt{noconn}};
+
+    \pic (jmp) at (8.2, 13.5) {jumper};
+    \node[below=3pt, font=\scriptsize] at (8.2, 13.5) {\texttt{jumper}};
+    \fill[black] (jmp-in) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-in};
+    \fill[black] (jmp-out) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-out};
+
+    \draw[thick] (10.3, 13.5) -- (12.1, 13.5);
+    \pic () at (11.2, 13.5) {bus_tick={4b}};
+    \node[below=14pt, font=\scriptsize] at (11.2, 13.5) {\texttt{bus\_tick=\{4b\}}};
+
+    \pic (pwr) at (13.8, 13.5) {vdd};
+    \node[below=14pt, font=\scriptsize] at (13.8, 13.5) {\texttt{vdd}};
+    \fill[black] (pwr-pin) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-pin};
+
+    \pic (gnd1) at (15.8, 13.5) {gnd};
+    \node[below=14pt, font=\scriptsize] at (15.8, 13.5) {\texttt{gnd}};
+    \fill[black] (gnd1-pin) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-pin};
+
+    % =========================================================================
+    % SECTION 2: PASSIVES, SWITCHES, & TRANSISTORS
+    % =========================================================================
+    \node[anchor=west, font=\large\bfseries] at (-5.0, 12.2) {2. Passives, Switches, \& Atomic Transistors};
+
+    \pic (r1) at (-3.8, 11.3) {res={$R$}};
+    \node[below=5pt, font=\scriptsize] at (-3.8, 11.3) {\texttt{res}};
+    \fill[black] (r1-p) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-p};
+    \fill[black] (r1-n) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-n};
+
+    \pic (vr1) at (-1.3, 11.3) {vres={$R_{\mathrm{adj}}$}};
+    \node[below=5pt, font=\scriptsize] at (-1.3, 11.3) {\texttt{vres}};
+    \fill[black] (vr1-p) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-p};
+    \fill[black] (vr1-n) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-n};
+
+    \pic (c1) at (1.2, 11.3) {cap={$C$}};
+    \node[below=5pt, font=\scriptsize] at (1.2, 11.3) {\texttt{cap}};
+    \fill[black] (c1-p) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-p};
+    \fill[black] (c1-n) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-n};
+
+    \pic (vc1) at (3.5, 11.3) {vcap={$C_{\mathrm{adj}}$}};
+    \node[below=5pt, font=\scriptsize] at (3.5, 11.3) {\texttt{vcap}};
+    \fill[black] (vc1-p) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-p};
+    \fill[black] (vc1-n) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-n};
+
+    \pic (sw1) at (6.0, 11.3) {sw_open={$\Phi_1$}};
+    \node[below=5pt, font=\scriptsize] at (6.0, 11.3) {\texttt{sw\_open}};
+    \fill[black] (sw1-in) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-in};
+    \fill[black] (sw1-out) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-out};
+
+    \pic (sw2) at (8.5, 11.3) {sw_close={$\Phi_{\mathrm{rst}}$}};
+    \node[below=5pt, font=\scriptsize] at (8.5, 11.3) {\texttt{sw\_close}};
+    \fill[black] (sw2-in) circle (1pt);
+    \fill[black] (sw2-out) circle (1pt);
+
+    \pic (sw3) at (11.2, 11.3) {sw_2port={$\Phi_{\mathrm{sel}}$}};
+    \node[below=5pt, font=\scriptsize] at (11.2, 11.3) {\texttt{sw\_2port}};
+    \fill[black] (sw3-in) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-in};
+    \fill[black] (sw3-out1) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-out1};
+    \fill[black] (sw3-out2) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-out2};
+
+    \pic (n1) at (13.6, 11.3) {nmos={$M_1$}};
+    \node[below=14pt, font=\scriptsize] at (13.6, 11.3) {\texttt{nmos}};
+    \fill[black] (n1-g) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-g};
+    \fill[black] (n1-d) circle (1pt) node[font=\tiny\ttfamily, above=1pt] {-d};
+    \fill[black] (n1-s) circle (1pt) node[font=\tiny\ttfamily, below=1pt] {-s};
+
+    \pic (p1) at (15.8, 11.3) {pmos={$M_2$}};
+    \node[below=14pt, font=\scriptsize] at (15.8, 11.3) {\texttt{pmos}};
+    \fill[black] (p1-g) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-g};
+    \fill[black] (p1-s) circle (1pt) node[font=\tiny\ttfamily, above=1pt] {-s};
+    \fill[black] (p1-d) circle (1pt) node[font=\tiny\ttfamily, below=1pt] {-d};
+
+    % =========================================================================
+    % SECTION 3: AMPLIFIERS, SE/DIFF CONVERTERS, & MUX/DEMUX
+    % =========================================================================
+    \node[anchor=west, font=\large\bfseries] at (-5.0, 9.7) {3. Amplifiers, Single-Ended \& Differential Converters, \& MUX/DEMUX};
+
+    \pic (op1) at (-4.0, 8.3) {opamp};
+    \node[below=12pt, font=\scriptsize] at (-4.0, 8.3) {\texttt{opamp}};
+    \fill[black] (op1-inn) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-inn};
+    \fill[black] (op1-inp) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-inp};
+    \fill[black] (op1-out) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-out};
+
+    \pic (dop1) at (-1.4, 8.3) {diff_opamp};
+    \node[below=14pt, font=\scriptsize] at (-1.4, 8.3) {\texttt{diff\_opamp}};
+    \fill[black] (dop1-inn) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-inn};
+    \fill[black] (dop1-inp) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-inp};
+    \fill[black] (dop1-outp) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-outp};
+    \fill[black] (dop1-outn) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-outn};
+
+    \pic (ase) at (1.5, 8.3) {adc_se={ADC}};
+    \node[below=14pt, font=\scriptsize] at (1.5, 8.3) {\texttt{adc\_se}};
+    \fill[black] (ase-in) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-in};
+    \fill[black] (ase-dout) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-dout};
+
+    \pic (adiff) at (4.5, 8.3) {adc_diff={4b\\Flash}};
+    \node[below=16pt, font=\scriptsize] at (4.5, 8.3) {\texttt{adc\_diff}};
+    \fill[black] (adiff-inp) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-inp};
+    \fill[black] (adiff-inn) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-inn};
+    \fill[black] (adiff-dout) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-dout};
+
+    \pic (dse) at (7.5, 8.3) {dac_se={DAC}};
+    \node[below=14pt, font=\scriptsize] at (7.5, 8.3) {\texttt{dac\_se}};
+    \fill[black] (dse-din) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-din};
+    \fill[black] (dse-out) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-out};
+
+    \pic (ddiff) at (10.5, 8.3) {dac_diff={R-DAC}};
+    \node[below=16pt, font=\scriptsize] at (10.5, 8.3) {\texttt{dac\_diff}};
+    \fill[black] (ddiff-din) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-din};
+    \fill[black] (ddiff-outp) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-outp};
+    \fill[black] (ddiff-outn) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-outn};
+
+    \pic (m1) at (13.4, 8.3) {mux4to1};
+    \node[below=22pt, font=\scriptsize] at (13.4, 8.3) {\texttt{mux4to1}};
+    \fill[black] (m1-in1) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-in1};
+    \fill[black] (m1-in2) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-in2};
+    \fill[black] (m1-in3) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-in3};
+    \fill[black] (m1-in4) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-in4};
+    \fill[black] (m1-out) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-out};
+
+    \pic (dm1) at (16.2, 8.3) {demux1to4};
+    \node[below=22pt, font=\scriptsize] at (16.2, 8.3) {\texttt{demux1to4}};
+    \fill[black] (dm1-in) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-in};
+    \fill[black] (dm1-out1) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-out1};
+    \fill[black] (dm1-out2) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-out2};
+    \fill[black] (dm1-out3) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-out3};
+    \fill[black] (dm1-out4) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-out4};
+
+    % =========================================================================
+    % SECTION 4: FILTER & DSP CALIBRATION BLOCKS
+    % =========================================================================
+    \node[anchor=west, font=\large\bfseries] at (-5.0, 6.2) {4. Passive Filter \& DSP Calibration Blocks (Border-Anchored Pins)};
+
+    \pic (apfb) at (-3.2, 4.9) {apf_block};
+    \node[below=16pt, font=\scriptsize] at (-3.2, 4.9) {\texttt{apf\_block}};
+    \fill[black] (apfb-inp) circle (1.2pt) node[font=\tiny\ttfamily, left=1pt] {-inp};
+    \fill[black] (apfb-inn) circle (1.2pt) node[font=\tiny\ttfamily, left=1pt] {-inn};
+    \fill[black] (apfb-outp) circle (1.2pt) node[font=\tiny\ttfamily, right=1pt] {-outp};
+    \fill[black] (apfb-outn) circle (1.2pt) node[font=\tiny\ttfamily, right=1pt] {-outn};
+
+    \pic (s1) at (0.8, 4.9) {sum={+/$-$}};
+    \node[below=16pt, font=\scriptsize] at (0.8, 4.9) {\texttt{sum}};
+    \fill[black] (s1-in1) circle (1.2pt) node[font=\tiny\ttfamily, left=1pt] {-in1};
+    \fill[black] (s1-in2) circle (1.2pt) node[font=\tiny\ttfamily, below=1pt] {-in2};
+    \fill[black] (s1-out) circle (1.2pt) node[font=\tiny\ttfamily, right=1pt] {-out};
+
+    \pic (m_dsp) at (3.4, 4.9) {mult};
+    \node[below=16pt, font=\scriptsize] at (3.4, 4.9) {\texttt{mult}};
+    \fill[black] (m_dsp-in1) circle (1.2pt) node[font=\tiny\ttfamily, left=1pt] {-in1};
+    \fill[black] (m_dsp-in2) circle (1.2pt) node[font=\tiny\ttfamily, below=1pt] {-in2};
+    \fill[black] (m_dsp-out) circle (1.2pt) node[font=\tiny\ttfamily, right=1pt] {-out};
+
+    \pic (del1) at (6.0, 4.9) {delay_block={$z^{-L}$}};
+    \node[below=16pt, font=\scriptsize] at (6.0, 4.9) {\texttt{delay\_block}};
+    \fill[black] (del1-in) circle (1.2pt) node[font=\tiny\ttfamily, left=1pt] {-in};
+    \fill[black] (del1-out) circle (1.2pt) node[font=\tiny\ttfamily, right=1pt] {-out};
+
+    \pic (fir1) at (10.2, 4.9) {fir_block={7-Tap Interpolation Filter/$\tau = +0.25\,T_s$}};
+    \node[below=18pt, font=\scriptsize] at (10.2, 4.9) {\texttt{fir\_block}};
+    \fill[black] (fir1-in) circle (1.2pt) node[font=\tiny\ttfamily, left=1pt] {-in};
+    \fill[black] (fir1-out) circle (1.2pt) node[font=\tiny\ttfamily, right=1pt] {-out};
+
+    \pic (lms1) at (15.2, 4.9) {lms_block={$\alpha_k$}};
+    \node[below=16pt, font=\scriptsize] at (15.2, 4.9) {\texttt{lms\_block}};
+    \fill[black] (lms1-in) circle (1.2pt) node[font=\tiny\ttfamily, left=1pt] {-in};
+    \fill[black] (lms1-out) circle (1.2pt) node[font=\tiny\ttfamily, right=1pt] {-out};
+
+    % =========================================================================
+    % SECTION 5: COMPLETE END-TO-END DIFFERENTIAL SIGNAL CHAIN
+    % =========================================================================
+    \draw[thick, black] (-5.0, 3.0) -- (18.5, 3.0);
+    \node[anchor=west, font=\large\bfseries] at (-5.0, 2.5) {5. End-to-End Differential Signal Chain (Built from Basic Stencils)};
+
+    \begin{scope}[shift={(0, -2.5)}]
+
+        % --- Step 1: Visio Input I/O Ports & Staggered Branching Terminals ---
+        \pic (pin_p) at (-4.4, 1.55) {ioport={$V_{\mathrm{in}+}$}};
+        \pic (pin_n) at (-4.4, 1.05) {ioport={$V_{\mathrm{in}-}$}};
+
+        \pic (t_vinp) at (-3.5, 1.55) {terminal_large};
+        \pic (t_vinn) at (-3.1, 1.05) {terminal_large};
+        \draw[adc wire] (pin_p-out) -- (t_vinp-center);
+        \draw[adc wire] (pin_n-out) -- (t_vinn-center);
+
+        % --- Step 2: Input All-Pass Filter (APF) ---
+        \pic (apf) at (-1.3, 1.3) {apf_block};
+        \draw[adc arrow] (t_vinp-center) -- (apf-inp);
+        \draw[adc arrow] (t_vinn-center) -- (apf-inn);
+
+        % --- Step 3: Differential Flash ADC Path ---
+        \pic (flash) at (-1.3, -1.2) {adc_diff={4b\\Flash}};
+        \draw[adc arrow] (t_vinp-center) |- (flash-inp);
+        \draw[adc arrow] (t_vinn-center) |- (flash-inn);
+        \draw[adc arrow] (-0.85, -2.2) node[below, font=\scriptsize\bfseries] {$\Phi_{\mathrm{CLK}}$} -- (flash-clk);
+
+        % --- Step 4: Differential R-DAC ---
+        \pic (dac) at (1.5, -1.2) {dac_diff={R-DAC}};
+        \draw[adc bus arrow] (flash-dout) -- (dac-din);
+        \pic () at (0.1, -1.2) {bus_tick={4b}};
+
+        % --- Step 5: Current Summing at Terminals (No summation circles) ---
+        \pic (ti_n) at (3.6, 1.55) {terminal_large};
+        \pic (ti_p) at (3.2, 1.05) {terminal_large};
+
+        \draw[adc arrow] (apf-outp) -- (ti_n-center);
+        \draw[adc arrow] (apf-outn) -- (ti_p-center);
+
+        % Differential DAC feedback currents sum directly at terminals
+        \draw[adc arrow] (dac-outp) -| (ti_n-center);
+        \draw[adc arrow] (dac-outn) -| (ti_p-center);
+
+        % --- Step 6: Differential Resetting Integrator (Atomic Opamp + Caps + Switches) ---
+        \pic (op) at (5.4, 1.3) {diff_opamp={2-stage\\Opamp}};
+        \draw[adc wire] (ti_n-center) -- (op-inn);
+        \draw[adc wire] (ti_p-center) -- (op-inp);
+
+        % Feedback terminals (aligned with +/-0.25cm diff pitch)
+        \pic (fb_in_n) at (4.2, 1.55) {terminal_small};
+        \pic (fb_in_p) at (4.2, 1.05) {terminal_small};
+        \pic (fb_out_p) at (6.6, 1.55) {terminal_small};
+        \pic (fb_out_n) at (6.6, 1.05) {terminal_small};
+
+        % Top parallel Cap (C_int) & Switch (Phi_rst)
+        \pic (c_top)  at (5.4, 2.30) {cap={$C_{\mathrm{int}}$}};
+        \pic (sw_top) at (5.4, 3.20) {sw_open={$\Phi_{\mathrm{rst}}$}};
+        \draw[adc wire] (fb_in_n-center) |- (c_top-p);
+        \draw[adc wire] (c_top-n) -| (fb_out_p-center);
+        \pic (tc_t1) at (4.2, 2.30) {terminal_small};
+        \pic (tc_t2) at (6.6, 2.30) {terminal_small};
+        \draw[adc wire] (tc_t1-center) |- (sw_top-in);
+        \draw[adc wire] (sw_top-out) -| (tc_t2-center);
+
+        % Bottom parallel Cap (C_int) & Switch (Phi_rst)
+        \pic (c_bot)  at (5.4, 0.05) {cap={$C_{\mathrm{int}}$}};
+        \pic (sw_bot) at (5.4, -0.85) {sw_open={$\Phi_{\mathrm{rst}}$}};
+        \draw[adc wire] (fb_in_p-center) |- (c_bot-p);
+        \draw[adc wire] (c_bot-n) -| (fb_out_n-center);
+        \pic (tc_b1) at (4.2, 0.05) {terminal_small};
+        \pic (tc_b2) at (6.6, 0.05) {terminal_small};
+        \draw[adc wire] (tc_b1-center) |- (sw_bot-in);
+        \draw[adc wire] (sw_bot-out) -| (tc_b2-center);
+
+        % --- Step 7: Differential Output Distribution to 4x TI Differential SAR Channels ---
+        \pic (t_outp) at (7.3, 1.55) {terminal_large};
+        \pic (t_outn) at (7.7, 1.05) {terminal_large};
+        \draw[adc wire] (op-outp) -- (t_outp-center);
+        \draw[adc wire] (op-outn) -- (t_outn-center);
+
+        \foreach \i/\y in {1/3.25, 2/1.90, 3/0.55, 4/-0.80} {
+            % Differential sampling switches (+ and - aligned to +/-0.25cm)
+            \pic (swp_\i) at (9.0, \y+0.25) {sw_open={$\Phi_{\i}$}};
+            \pic (swn_\i) at (9.0, \y-0.25) {sw_open={}};
+
+            \draw[adc wire] (t_outp-center) |- (swp_\i-in);
+            \draw[adc wire] (t_outn-center) |- (swn_\i-in);
+
+            % Differential SAR channel (Visio <| shape)
+            \pic (sar_\i) at (11.0, \y) {subadc={$\text{SAR}_{\i}$}};
+            \draw[adc arrow] (swp_\i-out) -- (sar_\i-inp);
+            \draw[adc arrow] (swn_\i-out) -- (sar_\i-inn);
+        }
+
+        % --- Step 8: 4:1 MUX (Arrows land directly on the MUX border!) ---
+        \pic (mux_out) at (13.6, 1.25) {mux4to1};
+        \draw[adc bus arrow] (sar_1-dout) -| ($(mux_out-in1) + (-0.5, 0)$) -- (mux_out-in1);
+        \draw[adc bus arrow] (sar_2-dout) -| ($(mux_out-in2) + (-0.7, 0)$) -- (mux_out-in2);
+        \draw[adc bus arrow] (sar_3-dout) -| ($(mux_out-in3) + (-0.7, 0)$) -- (mux_out-in3);
+        \draw[adc bus arrow] (sar_4-dout) -| ($(mux_out-in4) + (-0.5, 0)$) -- (mux_out-in4);
+
+        % --- Step 9: Digital Reconstruction FIR Filter ---
+        \pic (fir) at (16.3, 1.25) {fir_block={7-Tap FIR/$\tau = +0.25\,T_s$}};
+        \draw[adc bus arrow] (mux_out-out) -- (fir-in);
+        \draw[adc bus arrow] (fir-out) -- ++(0.9, 0) node[right, font=\small\bfseries] {$D_{\mathrm{out}}[n]$};
+
+    \end{scope}
+
+\end{tikzpicture}
+
+\newpage
+\noindent\centering
+\begin{tikzpicture}[>=Latex]
+
+    % =========================================================================
+    % PAGE 2 TITLE
+    % =========================================================================
+    \node[anchor=west, font=\LARGE\bfseries] at (-5.0, 15.5) {Visio-Style CircuiTikZ Stencil Library — Page 2};
+    \node[anchor=west, font=\small, text=black!75] at (-5.0, 15.0) {Sources, Digital Logic Gates, Flip-Flops, Waveform Primitives, \& Transistor-Level Example};
+    \draw[thick, black] (-5.0, 14.7) -- (18.5, 14.7);
+
+    % =========================================================================
+    % SECTION 6: SOURCES, LOGIC GATES, FLIP-FLOPS, & WAVEFORMS
+    % =========================================================================
+    \node[anchor=west, font=\large\bfseries] at (-5.0, 14.0) {6. Sources, Digital Logic Gates, Flip-Flops, \& Edge Primitives};
+
+    % Sources
+    \pic (vdc) at (-4.0, 12.6) {dc_source={$V_{\mathrm{DC}}$}};
+    \node[below=24pt, font=\scriptsize] at (-4.0, 12.6) {\texttt{dc\_source}};
+    \fill[black] (vdc-p) circle (1pt) node[font=\tiny\ttfamily, above=1pt] {-p};
+    \fill[black] (vdc-n) circle (1pt) node[font=\tiny\ttfamily, below=1pt] {-n};
+
+    \pic (vsin) at (-1.5, 12.6) {sin_source={$V_{\mathrm{in}}$}};
+    \node[below=24pt, font=\scriptsize] at (-1.5, 12.6) {\texttt{sin\_source}};
+    \fill[black] (vsin-p) circle (1pt) node[font=\tiny\ttfamily, above=1pt] {-p};
+    \fill[black] (vsin-n) circle (1pt) node[font=\tiny\ttfamily, below=1pt] {-n};
+
+    \pic (isrc) at (1.0, 12.6) {current_source={$I_{\mathrm{B}}$}};
+    \node[below=24pt, font=\scriptsize] at (1.0, 12.6) {\texttt{current\_source}};
+    \fill[black] (isrc-p) circle (1pt) node[font=\tiny\ttfamily, above=1pt] {-p};
+    \fill[black] (isrc-n) circle (1pt) node[font=\tiny\ttfamily, below=1pt] {-n};
+
+    % Logic Gates
+    \pic (g_and) at (3.8, 12.6) {and2};
+    \node[below=14pt, font=\scriptsize] at (3.8, 12.6) {\texttt{and2}};
+    \fill[black] (g_and-in1) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-in1};
+    \fill[black] (g_and-in2) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-in2};
+    \fill[black] (g_and-out) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-out};
+
+    \pic (g_nand) at (6.4, 12.6) {nand2};
+    \node[below=14pt, font=\scriptsize] at (6.4, 12.6) {\texttt{nand2}};
+    \fill[black] (g_nand-in1) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-in1};
+    \fill[black] (g_nand-in2) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-in2};
+    \fill[black] (g_nand-out) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-out};
+
+    \pic (g_or) at (9.0, 12.6) {or2};
+    \node[below=14pt, font=\scriptsize] at (9.0, 12.6) {\texttt{or2}};
+    \fill[black] (g_or-in1) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-in1};
+    \fill[black] (g_or-in2) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-in2};
+    \fill[black] (g_or-out) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-out};
+
+    \pic (g_xor) at (11.6, 12.6) {xor2};
+    \node[below=14pt, font=\scriptsize] at (11.6, 12.6) {\texttt{xor2}};
+    \fill[black] (g_xor-in1) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-in1};
+    \fill[black] (g_xor-in2) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-in2};
+    \fill[black] (g_xor-out) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-out};
+
+    \pic (ff1) at (14.5, 12.6) {dff};
+    \node[below=18pt, font=\scriptsize] at (14.5, 12.6) {\texttt{dff}};
+    \fill[black] (ff1-d) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-d};
+    \fill[black] (ff1-clk) circle (1pt) node[font=\tiny\ttfamily, left=1pt] {-clk};
+    \fill[black] (ff1-q) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-q};
+    \fill[black] (ff1-qb) circle (1pt) node[font=\tiny\ttfamily, right=1pt] {-qb};
+
+    \pic (re1) at (16.8, 12.8) {rise_edge};
+    \node[below=8pt, font=\scriptsize] at (16.8, 12.8) {\texttt{rise\_edge}};
+
+    \pic (fe1) at (16.8, 11.8) {fall_edge};
+    \node[below=8pt, font=\scriptsize] at (16.8, 11.8) {\texttt{fall\_edge}};
+
+    % =========================================================================
+    % SECTION 7: TRANSISTOR-LEVEL DIFFERENTIAL PAIR EXAMPLE
+    % =========================================================================
+    \draw[thick, black] (-5.0, 10.6) -- (18.5, 10.6);
+    \node[anchor=west, font=\large\bfseries] at (-5.0, 10.1) {7. Transistor-Level Verification: Differential Pair with Active PMOS Load};
+
+    \begin{scope}[shift={(1.0, 6.5)}]
+        % Supply rails
+        \pic (vdd_l) at (-1.5, 2.8) {vdd={$V_{\mathrm{DD}}$}};
+        \pic (vdd_r) at (1.5, 2.8) {vdd={$V_{\mathrm{DD}}$}};
+
+        % Active PMOS Current Mirror Load (M3, M4)
+        % Note: xscale=-1 mirrors (-0.25) so placing m3 at x=-1.25 puts drain/source at x=-1.50
+        \pic[xscale=-1] (m3) at (-1.25, 1.8) {pmos={}};
+        \node[left=8pt, font=\footnotesize\bfseries] at (m3-center) {$M_3$};
+        \pic (m4) at (1.25, 1.8) {pmos={$M_4$}};
+
+        \draw[adc wire] (vdd_l-pin) -- (m3-s);
+        \draw[adc wire] (vdd_r-pin) -- (m4-s);
+
+        % Connect PMOS gates together to V_CMFB bias (fully differential load)
+        \pic (t_pgate) at (0, 1.8) {terminal_small};
+        \draw[adc wire] (m3-g) -- (t_pgate-center) -- (m4-g);
+        \draw[adc wire] (t_pgate-center) -- ++(0, 0.5) node[above, font=\scriptsize\bfseries] {$V_{\mathrm{CMFB}}$};
+
+        % Input NMOS Differential Pair (M1, M2)
+        \pic (m1) at (-1.75, -0.2) {nmos={$M_1$}};
+        \pic[xscale=-1] (m2) at (1.75, -0.2) {nmos={}};
+        \node[left=8pt, font=\footnotesize\bfseries] at (m2-center) {$M_2$};
+
+        \draw[adc wire] (m3-d) -- (m1-d);
+        \draw[adc wire] (m4-d) -- (m2-d);
+
+        % Output terminals (Vout+, Vout-)
+        \pic (t_voutn) at (-1.5, 0.65) {terminal_large};
+        \pic (t_voutp) at (1.5, 0.65) {terminal_large};
+        \draw[adc wire] (t_voutn-center) -- ++(-1.2, 0) node[left, font=\small\bfseries] {$V_{\mathrm{out}-}$};
+        \draw[adc wire] (t_voutp-center) -- ++(1.2, 0) node[right, font=\small\bfseries] {$V_{\mathrm{out}+}$};
+
+        % Inputs Vin+, Vin-
+        \pic (vip_in) at (-3.2, -0.2) {ioport={$V_{\mathrm{in}+}$}};
+        \draw[adc wire] (vip_in-out) -- (m1-g);
+
+        \pic[xscale=-1] (vin_in) at (3.2, -0.2) {ioport};
+        \node[right=3pt, font=\small\bfseries] at (3.55, -0.2) {$V_{\mathrm{in}-}$};
+        \draw[adc wire] (vin_in-out) -- (m2-g);
+
+        % Tail Current Source NMOS (M5)
+        \pic (t_tail) at (0, -1.1) {terminal_small};
+        \draw[adc wire] (m1-s) |- (t_tail-center) -| (m2-s);
+
+        \pic (m5) at (-0.25, -2.0) {nmos={$M_5$}};
+        \draw[adc wire] (t_tail-center) -- (m5-d);
+        \draw[adc wire] (m5-g) -- ++(-0.6, 0) node[left, font=\small\bfseries] {$V_{\mathrm{bn}}$};
+
+        \pic (gnd_tail) at (0, -2.9) {gnd};
+        \draw[adc wire] (m5-s) -- (gnd_tail-pin);
+    \end{scope}
+
+\end{tikzpicture}
+
+\end{document}

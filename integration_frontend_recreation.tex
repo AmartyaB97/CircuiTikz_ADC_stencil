@@ -1,0 +1,118 @@
+\documentclass{article}
+\usepackage[margin=0.15in,paperwidth=11.0in,paperheight=4.5in]{geometry}
+\usepackage[american]{circuitikz}
+\usepackage{../tikz_stencils/adc_stencils}
+\pagestyle{empty}
+
+\begin{document}
+\noindent\centering
+\begin{tikzpicture}[>=Latex]
+
+    % =========================================================================
+    % RECREATION OF VISIO DETAILED ARCHITECTURE (integration_frontend.png)
+    % =========================================================================
+
+    % --- Dashed Region Boxes (stretched above to enclose Phi_rst and Phi_1) ---
+    \draw[dashed, thick, black!60] (-2.7, -0.3) rectangle (0.3, 2.5);
+    \node[above=2pt, font=\small\bfseries] at (-1.2, 2.5) {All Pass Filter ($T_d = T_S/2$)};
+
+    \draw[dashed, thick, black!60] (3.5, -1.3) rectangle (7.1, 3.95);
+    \node[above=2pt, font=\small\bfseries] at (5.3, 3.95) {Integrator};
+
+    \draw[dashed, thick, black!60] (8.0, -1.3) rectangle (12.4, 3.95);
+    \node[above=2pt, font=\small\bfseries] at (10.2, 3.95) {DT Backend};
+
+    % --- 1. Input I/O Ports & Staggered Branching Terminals ---
+    \pic (pin_p) at (-4.4, 1.55) {ioport={$V_{\mathrm{in}+}$}};
+    \pic (pin_n) at (-4.4, 1.05) {ioport={$V_{\mathrm{in}-}$}};
+
+    \pic (t_vinp) at (-3.5, 1.55) {terminal};
+    \pic (t_vinn) at (-3.1, 1.05) {terminal};
+    \draw[adc wire] (pin_p-out) -- (t_vinp-center);
+    \draw[adc wire] (pin_n-out) -- (t_vinn-center);
+
+    % --- 2. Input All-Pass Filter (APF) ---
+    \pic (apf) at (-1.2, 1.3) {apf_block};
+    \draw[adc wire] (t_vinp-center) -- (apf-inp);
+    \draw[adc wire] (t_vinn-center) -- (apf-inn);
+
+    % --- 3. 4-bit Flash ADC ---
+    \pic (flash) at (-1.2, -1.2) {adc_diff={4-bit\\Flash ADC}};
+    \draw[adc wire] (t_vinp-center) |- (flash-inp);
+    \draw[adc wire] (t_vinn-center) |- (flash-inn);
+    \draw[adc wire] (flash-clk) -- ++(0, -0.5) node[below, font=\scriptsize\bfseries] {$\Phi_{\mathrm{CLK}}$};
+
+    % --- 4. R-DAC ---
+    \pic (dac) at (1.7, -1.2) {dac_diff={R-DAC}};
+    \draw[adc bus arrow] (flash-dout) -- (dac-din);
+    \pic () at (0.25, -1.2) {bus_tick={4b}};
+
+    % --- 5. Current Summing at Virtual Ground Terminals ---
+    \pic (ti_n) at (3.9, 1.55) {terminal};
+    \pic (ti_p) at (3.3, 1.05) {terminal};
+
+    \draw[adc wire] (apf-outp) -- (ti_n-center);
+    \draw[adc wire] (apf-outn) -- (ti_p-center);
+    \draw[adc wire] (dac-outp) -| (ti_n-center);
+    \draw[adc wire] (dac-outn) -| (ti_p-center);
+
+    % --- 6. Differential Resetting Integrator ---
+    \pic (op) at (5.3, 1.3) {diff_opamp={2-stage\\Opamp}};
+    \draw[adc wire] (ti_n-center) -- (op-inn);
+    \draw[adc wire] (ti_p-center) -- (op-inp);
+
+    % Feedback terminals
+    \pic (fb_in_n) at (4.1, 1.55) {terminal};
+    \pic (fb_in_p) at (4.1, 1.05) {terminal};
+    \pic (fb_out_p) at (6.5, 1.55) {terminal};
+    \pic (fb_out_n) at (6.5, 1.05) {terminal};
+
+    % Top parallel Cap & Reset Switch
+    \pic (c_top)  at (5.3, 2.30) {cap={$C_{\mathrm{int}}$}};
+    \pic (sw_top) at (5.3, 3.15) {sw_open={$\Phi_{\mathrm{rst}}$}};
+    \draw[adc wire] (fb_in_n-center) |- (c_top-p);
+    \draw[adc wire] (c_top-n) -| (fb_out_p-center);
+    \pic (tc_t1) at (4.1, 2.30) {terminal};
+    \pic (tc_t2) at (6.5, 2.30) {terminal};
+    \draw[adc wire] (tc_t1-center) |- (sw_top-in);
+    \draw[adc wire] (sw_top-out) -| (tc_t2-center);
+
+    % Bottom parallel Cap & Reset Switch
+    \pic (c_bot)  at (5.3, 0.05) {cap={$C_{\mathrm{int}}$}};
+    \pic (sw_bot) at (5.3, -0.80) {sw_open={$\Phi_{\mathrm{rst}}$}};
+    \draw[adc wire] (fb_in_p-center) |- (c_bot-p);
+    \draw[adc wire] (c_bot-n) -| (fb_out_n-center);
+    \pic (tc_b1) at (4.1, 0.05) {terminal};
+    \pic (tc_b2) at (6.5, 0.05) {terminal};
+    \draw[adc wire] (tc_b1-center) |- (sw_bot-in);
+    \draw[adc wire] (sw_bot-out) -| (tc_b2-center);
+
+    % --- 7. 4x TI Differential Sampling Switches & Pipeline-SAR Channels ---
+    \pic (t_outp) at (7.3, 1.55) {terminal};
+    \pic (t_outn) at (7.7, 1.05) {terminal};
+    \draw[adc wire] (op-outp) -- (t_outp-center);
+    \draw[adc wire] (op-outn) -- (t_outn-center);
+
+    \foreach \i/\y in {1/3.0, 2/1.75, 3/0.5, 4/-0.75} {
+        \pic (swp_\i) at (8.9, \y+0.25) {sw_open={$\Phi_{\i}$}};
+        \pic (swn_\i) at (8.9, \y-0.25) {sw_open={}};
+
+        \draw[adc wire] (t_outp-center) |- (swp_\i-in);
+        \draw[adc wire] (t_outn-center) |- (swn_\i-in);
+
+        \ifnum\i=2
+            \pic at (7.3, \y+0.25) {terminal};
+            \pic at (7.7, \y-0.25) {terminal};
+        \fi
+        \ifnum\i=3
+            \pic at (7.3, \y+0.25) {terminal};
+            \pic at (7.7, \y-0.25) {terminal};
+        \fi
+
+        \pic (sar_\i) at (10.9, \y) {subadc={10b SAR$_{\i}$}};
+        \draw[adc wire] (swp_\i-out) -- (sar_\i-inp);
+        \draw[adc wire] (swn_\i-out) -- (sar_\i-inn);
+    }
+
+\end{tikzpicture}
+\end{document}
