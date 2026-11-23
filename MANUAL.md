@@ -9,9 +9,9 @@ A Visio-style CircuiTikZ/TikZ stencil library for drawing publication-grade anal
 Clone the repository and symlink `adc_stencils.sty` into your local `~/texmf` tree so `\usepackage{adc_stencils}` works from any directory:
 
 ```bash
-git clone https://github.com/<your-username>/adc-circuitikz-stencils.git
+git clone https://github.com/AmartyaB97/adc-circuitikz-stencils.git
 mkdir -p ~/texmf/tex/latex/adc_stencils
-ln -sf "$(pwd)/adc-circuitikz-stencils/adc_stencils.sty" ~/texmf/tex/latex/adc_stencils/adc_stencils.sty
+ln -sf "$(pwd)/CircuiTikz_ADC_stencil/adc_stencils.sty" ~/texmf/tex/latex/adc_stencils/adc_stencils.sty
 ```
 
 ---

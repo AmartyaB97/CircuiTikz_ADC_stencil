@@ -20,9 +20,9 @@ See [stencil_gallery.pdf](stencil_gallery.pdf) (or [stencil_gallery-1.png](stenc
 Clone the repository and symlink `adc_stencils.sty` into your local `~/texmf` tree:
 
 ```bash
-git clone https://github.com/<your-username>/adc-circuitikz-stencils.git
+git clone https://github.com/AmartyaB97/adc-circuitikz-stencils.git
 mkdir -p ~/texmf/tex/latex/adc_stencils
-ln -sf "$(pwd)/adc-circuitikz-stencils/adc_stencils.sty" ~/texmf/tex/latex/adc_stencils/adc_stencils.sty
+ln -sf "$(pwd)/CircuiTikz_ADC_stencil/adc_stencils.sty" ~/texmf/tex/latex/adc_stencils/adc_stencils.sty
 ```
 
 ## Usage
